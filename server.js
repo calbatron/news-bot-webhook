@@ -1,16 +1,20 @@
 'use strict';
 
-var express = require('express');
-var bodyParser = require('body-parser');
+var fs = require('fs'),
+    https = require('https'),
+    express = require('express');
+
+var port = 4430;
+
+var options = {
+    key: fs.readFileSync('./ssl/bbcnewsbot.key'),
+    cert: fs.readFileSync('./ssl/bbcnewsbot.pem'),
+};
 
 var app = express();
-app.use(bodyParser.json({limit: '10mb'}));
-app.use(bodyParser.urlencoded({limit: '10mb', extended: true}));
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Methods", "POST, GET, PUT");
-  next();
+
+var server = https.createServer(options, app).listen(port, function(){
+  console.log("Express server listening on port " + port);
 });
 
 app.get('/', function (req, res) {
@@ -23,9 +27,4 @@ app.get('/webhook', function (req, res) {
   } else {
     res.send('Error, wrong validation token');
   }
-});
-
-
-app.listen(4430, function() {
-   console.log('server is running');
 });
